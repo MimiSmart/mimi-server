@@ -49,7 +49,7 @@ wget -P /home/api https://github.com/MimiSmart/mimi-server/blob/main/api/api.php
 ```
 
 ## Обновление API плагина
-### Скопируйте файл https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so в директория /home/sh2/plugins и перезапустите сервер через screen. Если у вас имеется несколько screen, выберите screen сервера. Для выхода из screen используйте комбинацию клавиш Ctrl+A+D.
+### Скопируйте файл https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so в директорию /home/sh2/plugins и перезапустите сервер через screen. Если у вас имеется несколько screen, выберите screen сервера. Для выхода из screen используйте комбинацию клавиш Ctrl+A+D.
 ```
 wget -P /home/sh2/plugins https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so
 screen -rx
