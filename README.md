@@ -9,7 +9,7 @@ a2enmod rewrite
 
 ```
 
-## Обвновление конфигурации Web сервера Apache
+## Обновление конфигурации Web сервера Apache
 ### Сравните файлы сервера apache /etc/apache/apache2.conf и /etc/apache/sites-enabled/000-default.conf с файлами https://github.com/MimiSmart/mimi-server/tree/main/apache, если есть отличия, внесите их в вашу кофигурацию. После того как сделали изменения выполните слудующие команды:
 ```
 service apache2 restart
