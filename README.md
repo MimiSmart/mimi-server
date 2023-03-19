@@ -1,5 +1,15 @@
 # Обновление конфигурации МимиСмарт сервера для нового приложения. Внимание! Нижеуказанные действия применимы к CUARM. Не применяйте к MicroD+. 
-## Обвновление Web сервера Apache
+## Активировать модули web сервера apache
+```
+a2enmod headers
+a2enmod proxy
+a2enmod proxy_http
+a2enmod proxy_wstunnel
+a2enmod rewrite
+
+```
+
+## Обвновление конфигурации Web сервера Apache
 ### Сравните файлы сервера apache /etc/apache/apache2.conf и /etc/apache/sites-enabled/000-default.conf с файлами https://github.com/MimiSmart/mimi-server/tree/main/apache, если есть отличия, внесите их в вашу кофигурацию. После того как сделали изменения выполните слудующие команды:
 ```
 service apache2 restart
