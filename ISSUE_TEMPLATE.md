@@ -3,8 +3,9 @@
 ## Версия apache сервера:
 
 ## Android/iOS
-- (x) iOS
-- ( ) Android
+- [ ]
+  - (x) iOS
+  - ( ) Android
 
 ## Версия приложения :
 
