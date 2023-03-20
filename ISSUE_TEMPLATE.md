@@ -1,2 +1,7 @@
-- [] Linux version
-- [] Apache version
+Версия Linux:
+```
+```
+Версия apache сервера:
+```
+```
+Версия приложения:
