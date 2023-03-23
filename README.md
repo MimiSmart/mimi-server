@@ -1,5 +1,5 @@
 # Обновление конфигурации МимиСмарт сервера для нового приложения. Внимание! Нижеуказанные действия применимы к CUARM. Не применяйте к MicroD+. 
-## Активировать модули web сервера apache
+## Активировать модули web сервера apache. Выполните команды в консоли.
 ```
 a2enmod headers
 a2enmod proxy
@@ -45,13 +45,13 @@ Mar 13 13:17:38 raspberrypi systemd[1]: Started The Apache HTTP Server.
 ## Обновление API.
 ### Скопируйте файл https://github.com/MimiSmart/mimi-server/blob/main/api/api.php в диреторию /home/api
 ```
-wget -P /home/api https://github.com/MimiSmart/mimi-server/blob/main/api/api.php
+wget /home/api https://github.com/MimiSmart/mimi-server/blob/main/api/api.php
 ```
 
 ## Обновление API плагина
 ### Скопируйте файл https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so в директорию /home/sh2/plugins и перезапустите сервер через screen. Если у вас имеется несколько screen, выберите screen сервера. Для выхода из screen используйте комбинацию клавиш Ctrl+A+D.
 ```
-wget -P /home/sh2/plugins https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so
+wget /home/sh2/plugins https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so
 screen -rx
 qu
 ```
@@ -59,8 +59,8 @@ qu
 ## Сервис для камер видеонаблюдения
 ### Чтобы в новом приложении работали камеры видеонаблюдения, установите rtsp-server на ваш сервер.
 ```
-wget -P /usr/local/bin https://github.com/MimiSmart/mimi-server/blob/main/rtsp-server/rtsp-simple-server
-wget -P /usr/local/bin https://github.com/MimiSmart/mimi-server/blob/main/rtsp-server/rtsp-simple-server.yml
+wget /usr/local/bin https://github.com/MimiSmart/mimi-server/blob/main/rtsp-server/rtsp-simple-server
+wget /usr/local/bin https://github.com/MimiSmart/mimi-server/blob/main/rtsp-server/rtsp-simple-server.yml
 chmod +x /usr/local/bin/rtsp-simple-server
 
 ```
