@@ -45,13 +45,13 @@ Mar 13 13:17:38 raspberrypi systemd[1]: Started The Apache HTTP Server.
 ## Обновление API.
 ### Скопируйте файл https://github.com/MimiSmart/mimi-server/blob/main/api/api.php в диреторию /home/api
 ```
-wget /home/api https://github.com/MimiSmart/mimi-server/blob/main/api/api.php
+wget -O /home/api/api.php https://github.com/MimiSmart/mimi-server/blob/main/api/api.php
 ```
 
 ## Обновление API плагина
 ### Скопируйте файл https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so в директорию /home/sh2/plugins и перезапустите сервер через screen. Если у вас имеется несколько screen, выберите screen сервера. Для выхода из screen используйте комбинацию клавиш Ctrl+A+D.
 ```
-wget /home/sh2/plugins https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so
+wget -O /home/sh2/plugins/api_plugins.so https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so
 screen -rx
 qu
 ```
@@ -59,8 +59,8 @@ qu
 ## Сервис для камер видеонаблюдения
 ### Чтобы в новом приложении работали камеры видеонаблюдения, установите rtsp-server на ваш сервер.
 ```
-wget /usr/local/bin https://github.com/MimiSmart/mimi-server/blob/main/rtsp-server/rtsp-simple-server
-wget /usr/local/bin https://github.com/MimiSmart/mimi-server/blob/main/rtsp-server/rtsp-simple-server.yml
+wget -O /usr/local/bin/rtsp-simple-server https://github.com/MimiSmart/mimi-server/blob/main/rtsp-server/rtsp-simple-server
+wget -O /usr/local/etc/rtsp-simple-server.yml https://github.com/MimiSmart/mimi-server/blob/main/rtsp-server/rtsp-simple-server.yml
 chmod +x /usr/local/bin/rtsp-simple-server
 
 ```
