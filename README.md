@@ -67,7 +67,7 @@ chmod +x /usr/local/bin/rtsp-simple-server
 
 ### Для автоматического запуcка сервера при старте системы создайте службу.
 ```
-sudo tee /etc/systemd/system/rtsp-simple-server.service >/dev/null << EOF
+tee /etc/systemd/system/rtsp-simple-server.service >/dev/null << EOF
 [Unit]
 Wants=network.target
 [Service]
