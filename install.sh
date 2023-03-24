@@ -1,5 +1,7 @@
 #!/bin/bash
 
+rw
+
 # Активировать модули web сервера apache
 a2enmod headers
 a2enmod proxy
@@ -8,6 +10,8 @@ a2enmod proxy_wstunnel
 a2enmod rewrite
 
 # Обновление конфигурации Web сервера Apache
+mv /etc/apache/apache2.conf /etc/apache/apache2.conf_bak
+mv /etc/apache/sites-enabled/000-default.conf /etc/apache/sites-enabled/000-default.conf_bak
 curl -o /etc/apache/apache2.conf https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/apache2.conf
 curl -o /etc/apache/sites-enabled/000-default.conf https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/000-default.conf
 service apache2 restart
