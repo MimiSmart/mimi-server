@@ -25,6 +25,11 @@ apt-get install php-sqlite3
 phpenmod sqllite3
 ```
 
+### создаём папку images в папке /storage и устанавливаем парава 777.
+```
+chmod 777 /storage/images
+```
+
 ## Обновление конфигурации Web сервера Apache
 ### Сравните файлы сервера apache /etc/apache/apache2.conf и /etc/apache/sites-enabled/000-default.conf с файлами https://github.com/MimiSmart/mimi-server/tree/main/apache, если есть отличия, внесите их в вашу кофигурацию. После того как сделали изменения выполните слудующие команды:
 ```
