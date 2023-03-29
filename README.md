@@ -9,6 +9,22 @@ a2enmod rewrite
 
 ```
 
+## Устнанавливаем php sqlite.
+### Проверьте вашу версию php
+```
+php -v
+```
+### если версия 5, то устанавливаем пакет php5-sqlite для этой версии:
+```
+apt-get update
+apt-get install php5-sqlite
+```
+### если же 7 версия, то устанавливаем php-sqlite3
+```
+apt-get install php-sqlite3
+phpenmod sqllite3
+```
+
 ## Обновление конфигурации Web сервера Apache
 ### Сравните файлы сервера apache /etc/apache/apache2.conf и /etc/apache/sites-enabled/000-default.conf с файлами https://github.com/MimiSmart/mimi-server/tree/main/apache, если есть отличия, внесите их в вашу кофигурацию. После того как сделали изменения выполните слудующие команды:
 ```
