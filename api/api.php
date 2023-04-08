@@ -3,14 +3,15 @@
 date_default_timezone_set('Europe/Moscow');
 header("Content-Type: application/json; text/xml");
 define("BASE_DIR", __DIR__ . "/");
-define("XML_FILE", BASE_DIR . "logic.xml"); //set chmod 666
-define("LOG_FILE", BASE_DIR . "sh2/logs/logs.txt");
+define("XML_FILE", "/home/sh2/logic.xml"); //set chmod 666
+define("LOG_FILE", "/home/sh2/logs/logs.txt");
+define("DB_FILENAME", "/home/settings/db/mimismart.db");
+define("KEYS", "/home/sh2/keys.txt");
 
 //begin smart house server settings ##################################
 define("HOST", "127.0.0.1");
 define("PORT", 55555);
 define("SECRET_KEY", "1234567890123456");
-
 
 $globalSettings = array();
 $globalSettings["shs"] = array();
@@ -21,15 +22,8 @@ $globalSettings["shs"]["logFile"] = LOG_FILE;
 $globalSettings["debug"] = FALSE;
 $globalSettings["logFile"] = LOG_FILE;
 
-require_once BASE_DIR . 'AES128.php';
-require_once BASE_DIR . 'SHClient.php';
-
-// $fields = array(
-//     "addr" => "588:40",
-//     "scale" => 10,
-//     "from" => "2022-12-16 15:00:00",
-//     "to" => "2022-12-17 15:00:00"
-// );
+require_once BASE_DIR . "AES128.php";
+require_once BASE_DIR . "SHClient.php";
 
 $fields = array(
     "request" => null,
@@ -42,8 +36,32 @@ $fields = array(
     "id" => null,
     "subid" => null,
     "command" => null,
+    "img_name" => null,
+    "image" => null,
 );
 
+// Авторизация по токену ############################
+// $authHeader = apache_request_headers();
+// $authkey = $authHeader['Authorization'];
+// $token = str_replace('Bearer ', '', $authkey);
+// $lines = file(KEYS);
+
+// foreach ($lines as $line) {
+//     $words = explode(" ", $line);
+//     // echo $words[0] . ' '; 
+//     $first_word = $words[0];
+//     if ($first_word == $token) {
+//         $auth_success = true;
+//         break;
+//     }
+// }
+// if (!$auth_success) {
+//     http_response_code(401);
+//     die(json_encode(['error' => 'Unauthorized']));
+// }
+
+
+// Проверка параметров запроса ######################
 if ($_REQUEST['request'] === null) {
     print_r('MimiSmart API 2.0');
 } elseif ($_REQUEST['request'] === 'get-history') {
@@ -56,11 +74,16 @@ if ($_REQUEST['request'] === null) {
     send_command_to_sh($fields);
 } elseif ($_REQUEST['request'] === 'get-state') {
     get_state($fields);
+} elseif ($_REQUEST['request'] === 'get-image') {
+    get_image();
+} elseif ($_REQUEST['request'] === 'save-image') {
+    save_image();
 } else {
     print_r('Request not supported');
 }
 
 
+// Получение логики XML ######################
 function get_xml()
 {
     $shClient = new SHClient(HOST, PORT, SECRET_KEY, LOG_FILE);
@@ -74,13 +97,14 @@ function get_xml()
     }
 }
 
+
+// Получение статуса устройств ######################
 function get_state($fields)
 {
     foreach ($fields as $field => $value) {
         if (array_key_exists($field, $_REQUEST)) $fields[$field] = $_REQUEST[$field];
     }
 
-    // list($id, $subid) = explode(":", $fields["addr"]);
     $shClient = new SHClient(HOST, PORT, SECRET_KEY, LOG_FILE);
 
     if ($shClient->run2()) {
@@ -93,6 +117,93 @@ function get_state($fields)
     }
 }
 
+
+// Выгрузка изображения на сервер ######################
+function save_image()
+{
+    $fields = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($fields['img_name']) || !isset($fields['image'])) {
+        header('HTTP/1.1 400 Bad Request');
+        die('Missing required fields');
+    }
+
+    if ($_SERVER['CONTENT_TYPE'] != 'application/json') {
+        header('HTTP/1.1 400 Bad Request');
+        die('This endpoint only accepts JSON requests');
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+        try {
+            $filename = time() . '_' . $fields['img_name'];
+            $path = '/storage/images/' . $filename;
+            file_put_contents($path, $fields['image']);
+
+            $db = new SQLite3(DB_FILENAME);
+            $img_table = "CREATE TABLE IF NOT EXISTS images (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                name VARCHAR NOT NULL,
+                path VARCHAR NOT NULL
+            )";
+            $db->exec($img_table);
+            $db->exec("INSERT INTO images (name, path) VALUES ('$filename', '$path')");
+            $last_id = $db->lastInsertRowID();
+            $db->close();
+
+            echo json_encode(array('success' => true, 'id' => $last_id));
+        } catch (Exception $e) {
+            header('HTTP/1.1 400 Bad Request');
+            echo 'Error: ',  $e->getMessage(), "\n";
+        }
+    }
+}
+
+
+// Загрузка изображения с сервера ######################
+function get_image()
+{
+
+    $fields = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($fields['img_id'])) {
+        header('HTTP/1.1 400 Bad Request');
+        die('Missing required fields');
+    }
+
+    if ($_SERVER['CONTENT_TYPE'] != 'application/json') {
+        header('HTTP/1.1 400 Bad Request');
+        die('This endpoint only accepts JSON requests');
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+        try {
+            $db = new SQLite3(DB_FILENAME);
+            $img_id = $fields['img_id'];
+            $image = $db->querySingle("SELECT path FROM images WHERE id = $img_id");
+            if ($image) {
+                $img_base64 = file_get_contents($image);
+                header('Content-Type: application/json');
+                // 'data: '.mime_content_type($img_file).';base64,'.$imgData;
+                echo json_encode(array('image' => $img_base64));
+            } else {
+                header('HTTP/1.1 404 Not Found');
+                echo $image;
+                die('Image not found');
+            }
+        } catch (Exception $e) {
+            header('HTTP/1.1 400 Bad Request');
+            echo 'Error: ',  $e->getMessage(), "\n";
+        }
+    } else {
+        header('HTTP/1.1 400 Bad Request');
+        die('Unsupported request method');
+    }
+}
+
+
+// Отправка команды серверу ######################
 function send_command_to_sh($fields)
 {
     foreach ($fields as $field => $value) {
@@ -111,6 +222,8 @@ function send_command_to_sh($fields)
     }
 }
 
+
+// Отправка сообщения ######################
 function send_message($fields)
 {
 
@@ -134,6 +247,7 @@ function send_message($fields)
 }
 
 
+// Получение статистики устройств ######################
 function get_history($fields)
 {
     foreach ($fields as $field => $value) {
@@ -184,7 +298,6 @@ function get_history($fields)
                 if (strpos($addr, ":") !== FALSE) {
                     list($id, $subid) = explode(":", $addr);
                     $itemType = $shClient->getItemType($id, $subid);
-                    // $this->msg = "itemType: " . $itemType;
 
                     if ($itemType != "") {
                         $params["id"] = $id;
