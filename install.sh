@@ -1,37 +1,91 @@
 #!/bin/bash
 
-rw
-
-# Активировать модули web сервера apache
+# Активируем необходимые модули
 a2enmod headers
 a2enmod proxy
 a2enmod proxy_http
 a2enmod proxy_wstunnel
 a2enmod rewrite
 
-# Обновление конфигурации Web сервера Apache
-mv /etc/apache/apache2.conf /etc/apache/apache2.conf_bak
-mv /etc/apache/sites-enabled/000-default.conf /etc/apache/sites-enabled/000-default.conf_bak
-curl -o /etc/apache/apache2.conf https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/apache2.conf
-curl -o /etc/apache/sites-enabled/000-default.conf https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/000-default.conf
+# Проверям версию PHP и устанавливааем необходимые пакеты
+if php -v | grep -q "PHP 5"; then
+  apt-get install php5-sqlite
+elif php -v | grep -q "PHP 7"; then
+  apt-get install php-sqlite3
+else
+  echo "Неподдерживаемая версия версия PHP."
+  exit 1
+fi
+
+# Закачиваем и подменяем конфигурационные файлы apache
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/000-default.conf -O /etc/apache2/sites-available/000-default.conf
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/apache2.conf -O /etc/apache2/apache2.conf
+
+# Перезапускаем службу apache
 service apache2 restart
-service apache2 status
 
-# Обновление API
-curl -o /home/api/api.php https://raw.githubusercontent.com/MimiSmart/mimi-server/main/api/api.php
+# Проверяем запустилась ли слуюба apache
+if systemctl is-active --quiet apache2; then
+  echo "Apache работает корректно."
+else
+  echo "Служба Apache не запустилась корректно. Проверте журнал."
+  exit 1
+fi
 
-# Обновление API плагина
-curl -o /home/sh2/plugins/api_plugin.so https://raw.githubusercontent.com/MimiSmart/mimi-server/main/plugin/api_plugin.so
-screen -S server -X quit || true
-screen -dmS server sh -c '/home/sh2/server.sh; exec bash'
+# Создаём папку images и устанавливаем необходимые права
+mkdir /storage/images
+chmod 777 /storage/images
 
-# Сервис для камер видеонаблюдения
-curl -o /usr/local/bin/rtsp-simple-server https://raw.githubusercontent.com/MimiSmart/mimi-server/main/rtsp-server/rtsp-simple-server
-curl -o /usr/local/etc/rtsp-simple-server.yml https://raw.githubusercontent.com/MimiSmart/mimi-server/main/rtsp-server/rtsp-simple-server.yml 
-chmod +x /usr/local/bin/rtsp-simple-server
+# Проверяем успешно ли создана папка
+if [ -d "/storage/images" ]; then
+  echo "Images folder created successfully."
+else
+  echo "Не удалось создать директория images. Выход."
+  exit 1
+fi
 
-# Для автоматического запуcка сервера при старте системы создайте службу
-tee /etc/systemd/system/rtsp-simple-server.service >/dev/null << EOF
+# Загружаем новый API в папку /home/api
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/api/api.php -O /home/api/api.php
+
+# Проверяем успешно ли скопирован файл.
+if [ -f "/home/api/api.php" ]; then
+  echo "api.php успешно загружен."
+else
+  echo "Не удалось загрузить api.php. Выход."
+  exit 1
+fi
+
+# Загружаем новый плагин api_plugin.so и его аргументы в /home/sh2/plugins
+wget https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so -O /home/sh2/plugins/api_plugin.so
+
+# Check if file was downloaded successfully
+if [ -f "/home/sh2/plugins/api_plugin.so" ]; then
+  echo "api_plugin.so downloaded successfully."
+else
+  echo "Failed to download api_plugin.so. Script will now exit."
+  exit 1
+fi
+
+# Restart mimismart service in screen
+screen -S mimismart -X stuff "qu$(printf \\r)"
+
+# Загрузить сервер mediamtx
+wget https://github.com/MimiSmart/mimi-server/blob/main/midiamtx/mediamtx -O /usr/local/bin/mediamtx
+wget https://github.com/MimiSmart/mimi-server/blob/main/midiamtx/mediamtx.yml -O /usr/local/etc/mediamtx.yml
+
+# Проверить успешно ли загружены файлы
+if [ -f "/usr/local/bin/mediamtx" ] && [ -f "/usr/local/etc/mediamtx.yml" ]; then
+  echo "Files downloaded successfully."
+else
+  echo "Failed to download files. Script will now exit."
+  exit 1
+fi
+
+# Сделать mediamtx исполняемым
+chmod +x /usr/local/bin/mediamtx
+
+# Создаём службу mideamtx
+cat <<EOF >/etc/systemd/system/rtsp-simple-server.service
 [Unit]
 Wants=network.target
 [Service]
@@ -39,6 +93,32 @@ ExecStart=/usr/local/bin/rtsp-simple-server /usr/local/etc/rtsp-simple-server.ym
 [Install]
 WantedBy=multi-user.target
 EOF
+
+# Перезапускаем системный демон и запускаем слуюбу
 systemctl daemon-reload
-systemctl enable rtsp-simple-server
-systemctl start rtsp-simple-server
+systemctl enable mediamtx.service
+systemctl start mediamtx.service
+
+# Проверяем, что служба запущена
+if systemctl is-active --quiet mediamtx.service; then
+  echo "mediamtx запущена."
+else
+  echo "Не удалось запустить службу mideamtx. Выход."
+  exit 1
+fi
+
+# Копируем директорию vendor для api
+wget https://github.com/MimiSmart/mimi-server/archive/vendor.zip -O /home/api/vendor.zip
+unzip /home/api/vendor.zip -d /home/api/
+
+# Проверяем успешно ли распакован архив
+if [ -d "/home/api/vendor" ]; then
+  echo "Архив успешно распакован"
+else
+  echo "Ошибка при распаковке архива. Выход."
+  exit 1
+fi
+
+echo "Обновление сервера успешно ввыполнено. Мои поздравления."
+
+
