@@ -18,8 +18,8 @@ else
 fi
 
 # Закачиваем и подменяем конфигурационные файлы apache
-wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/000-default.conf -O /etc/apache2/sites-available/000-default.conf
-wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/apache2.conf -O /etc/apache2/apache2.conf
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/000-default.conf?raw=true -O /etc/apache2/sites-available/000-default.conf
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/apache2.conf?raw=true -O /etc/apache2/apache2.conf
 
 # Перезапускаем службу apache
 service apache2 restart
@@ -45,7 +45,7 @@ else
 fi
 
 # Загружаем новый API в папку /home/api
-wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/api/api.php -O /home/api/api.php
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/api/api.php?raw=true -O /home/api/api.php
 
 # Проверяем успешно ли скопирован файл.
 if [ -f "/home/api/api.php" ]; then
@@ -56,7 +56,7 @@ else
 fi
 
 # Загружаем новый плагин api_plugin.so и его аргументы в /home/sh2/plugins
-wget https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so -O /home/sh2/plugins/api_plugin.so
+wget https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so?raw=true -O /home/sh2/plugins/api_plugin.so
 
 # Check if file was downloaded successfully
 if [ -f "/home/sh2/plugins/api_plugin.so" ]; then
@@ -70,8 +70,8 @@ fi
 screen -S mimismart -X stuff "qu$(printf \\r)"
 
 # Загрузить сервер mediamtx
-wget https://github.com/MimiSmart/mimi-server/blob/main/midiamtx/mediamtx -O /usr/local/bin/mediamtx
-wget https://github.com/MimiSmart/mimi-server/blob/main/midiamtx/mediamtx.yml -O /usr/local/etc/mediamtx.yml
+wget https://github.com/MimiSmart/mimi-server/blob/main/midiamtx/mediamtx?raw=true -O /usr/local/bin/mediamtx
+wget https://github.com/MimiSmart/mimi-server/blob/main/midiamtx/mediamtx.yml?raw=true -O /usr/local/etc/mediamtx.yml
 
 # Проверить успешно ли загружены файлы
 if [ -f "/usr/local/bin/mediamtx" ] && [ -f "/usr/local/etc/mediamtx.yml" ]; then
@@ -108,7 +108,7 @@ else
 fi
 
 # Копируем директорию vendor для api
-wget https://github.com/MimiSmart/mimi-server/archive/vendor.zip -O /home/api/vendor.zip
+wget https://github.com/MimiSmart/mimi-server/archive/vendor.zip?raw=true -O /home/api/vendor.zip
 unzip /home/api/vendor.zip -d /home/api/
 
 # Проверяем успешно ли распакован архив
