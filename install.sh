@@ -20,7 +20,7 @@ a2enmod proxy_wstunnel > /dev/null 2>&1
 a2enmod rewrite > /dev/null 2>&1
 
 # Проверям версию PHP и устанавливааем необходимые пакеты
-echo "Провепряю версию PHP"
+echo "Проверяю версию PHP"
 if php -v | grep -q "PHP 5"; then
   echo "Версия PHP - 5. Устанавливаю SQLite для PHP5"
   apt-get install -y php5-sqlite > /dev/null 2>&1
@@ -38,7 +38,7 @@ wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/000-def
 wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/apache2.conf?raw=true -O /etc/apache2/apache2.conf > /dev/null 2>&1
 
 # Перезапускаем службу apache
-echo "Перезапуская Apache службу"
+echo "Перезапускаю Apache службу"
 service apache2 restart > /dev/null 2>&1
 
 # Проверяем запустилась ли слуюба apache
@@ -140,7 +140,7 @@ fi
 # Копируем директорию vendor для api
 echo "Качаем зависимости для API"
 wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/api/vendor.zip?raw=true -O /home/api/vendor.zip > /dev/null 2>&1
-unzip /home/api/vendor.zip -d /home/api/ # > /dev/null 2>&1
+unzip /home/api/vendor.zip -d -u /home/api/ > /dev/null 2>&1
 
 # Проверяем успешно ли распакован архив
 if [ -d "/home/api/vendor" ]; then
