@@ -38,7 +38,7 @@ chmod 777 /storage/images
 
 # Проверяем успешно ли создана папка
 if [ -d "/storage/images" ]; then
-  echo "Images folder created successfully."
+  echo "Директория Imagages успешно создана."
 else
   echo "Не удалось создать директория images. Выход."
   exit 1
@@ -60,14 +60,21 @@ wget https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so?raw
 
 # Check if file was downloaded successfully
 if [ -f "/home/sh2/plugins/api_plugin.so" ]; then
-  echo "api_plugin.so downloaded successfully."
+  echo "api_plugin.so успешно загружен."
 else
-  echo "Failed to download api_plugin.so. Script will now exit."
+  echo "Не удалось загрузить api_plugin.so. Выход."
   exit 1
 fi
 
 # Restart mimismart service in screen
-screen -S mimismart -X stuff "qu$(printf \\r)"
+screen -S mimiserver -X stuff "qu$(printf \\r)"
+
+if [ $? -eq 0 ]; then
+    echo "Перезапуск сервера успешно выполнен."
+else
+    echo "Перезапуск сервера не выполенен, выполните вручную."
+fi
+
 
 # Загрузить сервер mediamtx
 wget https://github.com/MimiSmart/mimi-server/blob/main/midiamtx/mediamtx?raw=true -O /usr/local/bin/mediamtx
