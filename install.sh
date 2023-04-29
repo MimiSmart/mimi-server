@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# Проверяем версию операционной системы
+os_name=$(uname -s)
+
+if [[ "$os_name" == "Linux" && "$(uname -m)" == "arm"* ]]; then
+    echo "Операционная система поддерживается"
+else
+    echo "Операционная система не поддерживается"
+    exit 1
+fi
+
+
 # Активируем необходимые модули
 a2enmod headers
 a2enmod proxy
