@@ -4,7 +4,7 @@
 os_name=$(uname -s)
 
 if [[ "$os_name" == "Linux" && "$(uname -m)" == "arm"* ]]; then
-    echo "Операционная система поддерживается"
+    echo "Операционная система поддерживается. Начинаю установку."
 else
     echo "Операционная система не поддерживается"
     exit 1
@@ -12,6 +12,7 @@ fi
 
 
 # Активируем необходимые модули
+echo "Активирую необходимые модули Apache"
 a2enmod headers > /dev/null 2>&1
 a2enmod proxy > /dev/null 2>&1
 a2enmod proxy_http > /dev/null 2>&1
@@ -19,31 +20,37 @@ a2enmod proxy_wstunnel > /dev/null 2>&1
 a2enmod rewrite > /dev/null 2>&1
 
 # Проверям версию PHP и устанавливааем необходимые пакеты
+echo "Провепряю версию PHP"
 if php -v | grep -q "PHP 5"; then
-  apt-get install php5-sqlite > /dev/null 2>&1
+  echo "Версия PHP - 5. Устанавливаю SQLite для PHP5"
+  apt-get install -y php5-sqlite > /dev/null 2>&1
 elif php -v | grep -q "PHP 7"; then
-  apt-get install php-sqlite3 > /dev/null 2>&1
+  echo "Версия PHP - 7. Устанавливаю SQLite3 для PHP7"
+  apt-get install -y php-sqlite3 > /dev/null 2>&1
 else
   echo "Неподдерживаемая версия версия PHP."
   exit 1
 fi
 
 # Закачиваем и подменяем конфигурационные файлы apache
+echo "Скачиваю новую конфигурацию Apache"
 wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/000-default.conf?raw=true -O /etc/apache2/sites-available/000-default.conf > /dev/null 2>&1
 wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/apache2.conf?raw=true -O /etc/apache2/apache2.conf > /dev/null 2>&1
 
 # Перезапускаем службу apache
+echo "Перезапуская Apache службу"
 service apache2 restart > /dev/null 2>&1
 
 # Проверяем запустилась ли слуюба apache
 if systemctl is-active --quiet apache2; then
-  echo "Apache работает корректно."
+  echo "Apache успешно перезапущена."
 else
   echo "Служба Apache не запустилась корректно. Проверте журнал."
   exit 1
 fi
 
 # Создаём папку images и устанавливаем необходимые права
+echo "Создаю папку Images"
 mkdir /storage/images > /dev/null 2>&1
 chmod 777 /storage/images > /dev/null 2>&1
 
@@ -56,28 +63,31 @@ else
 fi
 
 # Загружаем новый API в папку /home/api
+echo "Загрудаю новый API"
 wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/api/api.php?raw=true -O /home/api/api.php > /dev/null 2>&1
 
 # Проверяем успешно ли скопирован файл.
 if [ -f "/home/api/api.php" ]; then
-  echo "api.php успешно загружен."
+  echo "API успешно установлен."
 else
-  echo "Не удалось загрузить api.php. Выход."
+  echo "Не удалось установить API. Выход."
   exit 1
 fi
 
 # Загружаем новый плагин api_plugin.so и его аргументы в /home/sh2/plugins
+echo "Загружаю новый API Plugin"
 wget https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so?raw=true -O /home/sh2/plugins/api_plugin.so > /dev/null 2>&1
 
 # Check if file was downloaded successfully
 if [ -f "/home/sh2/plugins/api_plugin.so" ]; then
-  echo "api_plugin.so успешно загружен."
+  echo "API plugin успешно загружен."
 else
-  echo "Не удалось загрузить api_plugin.so. Выход."
+  echo "Не удалось загрузить API Plugin. Выход."
   exit 1
 fi
 
 # Restart mimismart service in screen
+echo "Пытаясь перезапустить сервер Mimiserver"
 screen -S mimiserver -X stuff "qu$(printf \\r)"
 
 if [ $? -eq 0 ]; then
@@ -88,14 +98,15 @@ fi
 
 
 # Загрузить сервер mediamtx
+echo "Скачиваю сервер Mediamtx"
 wget https://github.com/MimiSmart/mimi-server/blob/main/midiamtx/mediamtx?raw=true -O /usr/local/bin/mediamtx > /dev/null 2>&1
 wget https://github.com/MimiSmart/mimi-server/blob/main/midiamtx/mediamtx.yml?raw=true -O /usr/local/etc/mediamtx.yml > /dev/null 2>&1
 
 # Проверить успешно ли загружены файлы
 if [ -f "/usr/local/bin/mediamtx" ] && [ -f "/usr/local/etc/mediamtx.yml" ]; then
-  echo "Files downloaded successfully."
+  echo "Файлы mediamtx сервера успешно загружены."
 else
-  echo "Failed to download files. Script will now exit."
+  echo "Не удалось загрузить файлы сервера mediamtx."
   exit 1
 fi
 
@@ -103,6 +114,7 @@ fi
 chmod +x /usr/local/bin/mediamtx
 
 # Создаём службу mideamtx
+echo "Создаю службу mediamtx"
 cat <<EOF >/etc/systemd/system/rtsp-simple-server.service
 [Unit]
 Wants=network.target
@@ -119,21 +131,22 @@ systemctl start mediamtx.service > /dev/null 2>&1
 
 # Проверяем, что служба запущена
 if systemctl is-active --quiet mediamtx.service; then
-  echo "mediamtx запущена."
+  echo "Служба mediamtx запущена."
 else
   echo "Не удалось запустить службу mideamtx. Выход."
   exit 1
 fi
 
 # Копируем директорию vendor для api
+echo "Качаем зависимости для API"
 wget https://github.com/MimiSmart/mimi-server/archive/vendor.zip?raw=true -O /home/api/vendor.zip > /dev/null 2>&1
 unzip /home/api/vendor.zip -d /home/api/ > /dev/null 2>&1
 
 # Проверяем успешно ли распакован архив
 if [ -d "/home/api/vendor" ]; then
-  echo "Архив успешно распакован"
+  echo "Архив зависимостей успешно распакован"
 else
-  echo "Ошибка при распаковке архива. Выход."
+  echo "Ошибка при распаковке архива зависимостей. Выход."
   exit 1
 fi
 
