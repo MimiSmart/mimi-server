@@ -63,7 +63,7 @@ else
 fi
 
 # Загружаем новый API в папку /home/api
-echo "Загрудаю новый API"
+echo "Загружаю новый API"
 wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/api/api.php?raw=true -O /home/api/api.php > /dev/null 2>&1
 
 # Проверяем успешно ли скопирован файл.
@@ -76,7 +76,7 @@ fi
 
 # Загружаем новый плагин api_plugin.so и его аргументы в /home/sh2/plugins
 echo "Загружаю новый API Plugin"
-wget https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so?raw=true -O /home/sh2/plugins/api_plugin.so > /dev/null 2>&1
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/plugin/api_plugin.so?raw=true -O /home/sh2/plugins/api_plugin.so > /dev/null 2>&1
 
 # Check if file was downloaded successfully
 if [ -f "/home/sh2/plugins/api_plugin.so" ]; then
@@ -99,8 +99,8 @@ fi
 
 # Загрузить сервер mediamtx
 echo "Скачиваю сервер Mediamtx"
-wget https://github.com/MimiSmart/mimi-server/blob/main/midiamtx/mediamtx?raw=true -O /usr/local/bin/mediamtx > /dev/null 2>&1
-wget https://github.com/MimiSmart/mimi-server/blob/main/midiamtx/mediamtx.yml?raw=true -O /usr/local/etc/mediamtx.yml > /dev/null 2>&1
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/midiamtx/mediamtx?raw=true -O /usr/local/bin/mediamtx > /dev/null 2>&1
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/midiamtx/mediamtx.yml?raw=true -O /usr/local/etc/mediamtx.yml > /dev/null 2>&1
 
 # Проверить успешно ли загружены файлы
 if [ -f "/usr/local/bin/mediamtx" ] && [ -f "/usr/local/etc/mediamtx.yml" ]; then
@@ -139,7 +139,7 @@ fi
 
 # Копируем директорию vendor для api
 echo "Качаем зависимости для API"
-wget https://github.com/MimiSmart/mimi-server/archive/vendor.zip?raw=true -O /home/api/vendor.zip > /dev/null 2>&1
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/api/vendor.zip?raw=true -O /home/api/vendor.zip > /dev/null 2>&1
 unzip /home/api/vendor.zip -d /home/api/ > /dev/null 2>&1
 
 # Проверяем успешно ли распакован архив
