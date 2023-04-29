@@ -78,11 +78,11 @@ qu
 ```
 
 ## Сервис для камер видеонаблюдения
-### Чтобы в новом приложении работали камеры видеонаблюдения, установите rtsp-server на ваш сервер.
+### Чтобы в новом приложении работали камеры видеонаблюдения, установите mediamtx на ваш сервер.
 ```
-curl -o /usr/local/bin/rtsp-simple-server https://github.com/MimiSmart/mimi-server/blob/main/rtsp-server/rtsp-simple-server
-curl -o /usr/local/etc/rtsp-simple-server.yml https://github.com/MimiSmart/mimi-server/blob/main/rtsp-server/rtsp-simple-server.yml
-chmod +x /usr/local/bin/rtsp-simple-server
+curl -o /usr/local/bin/mediamtx https://github.com/MimiSmart/mimi-server/blob/main/rtsp-server/mediamtx
+curl -o /usr/local/etc/mediamtx.yml https://github.com/MimiSmart/mimi-server/blob/main/rtsp-server/mediamtx.yml
+chmod +x /usr/local/bin/mediamtx
 
 ```
 
