@@ -12,28 +12,28 @@ fi
 
 
 # Активируем необходимые модули
-a2enmod headers
-a2enmod proxy
-a2enmod proxy_http
-a2enmod proxy_wstunnel
-a2enmod rewrite
+a2enmod headers > /dev/null 2>&1
+a2enmod proxy > /dev/null 2>&1
+a2enmod proxy_http > /dev/null 2>&1
+a2enmod proxy_wstunnel > /dev/null 2>&1
+a2enmod rewrite > /dev/null 2>&1
 
 # Проверям версию PHP и устанавливааем необходимые пакеты
 if php -v | grep -q "PHP 5"; then
-  apt-get install php5-sqlite
+  apt-get install php5-sqlite > /dev/null 2>&1
 elif php -v | grep -q "PHP 7"; then
-  apt-get install php-sqlite3
+  apt-get install php-sqlite3 > /dev/null 2>&1
 else
   echo "Неподдерживаемая версия версия PHP."
   exit 1
 fi
 
 # Закачиваем и подменяем конфигурационные файлы apache
-wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/000-default.conf?raw=true -O /etc/apache2/sites-available/000-default.conf
-wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/apache2.conf?raw=true -O /etc/apache2/apache2.conf
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/000-default.conf?raw=true -O /etc/apache2/sites-available/000-default.conf > /dev/null 2>&1
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/apache2.conf?raw=true -O /etc/apache2/apache2.conf > /dev/null 2>&1
 
 # Перезапускаем службу apache
-service apache2 restart
+service apache2 restart > /dev/null 2>&1
 
 # Проверяем запустилась ли слуюба apache
 if systemctl is-active --quiet apache2; then
@@ -44,8 +44,8 @@ else
 fi
 
 # Создаём папку images и устанавливаем необходимые права
-mkdir /storage/images
-chmod 777 /storage/images
+mkdir /storage/images > /dev/null 2>&1
+chmod 777 /storage/images > /dev/null 2>&1
 
 # Проверяем успешно ли создана папка
 if [ -d "/storage/images" ]; then
@@ -56,7 +56,7 @@ else
 fi
 
 # Загружаем новый API в папку /home/api
-wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/api/api.php?raw=true -O /home/api/api.php
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/api/api.php?raw=true -O /home/api/api.php > /dev/null 2>&1
 
 # Проверяем успешно ли скопирован файл.
 if [ -f "/home/api/api.php" ]; then
@@ -67,7 +67,7 @@ else
 fi
 
 # Загружаем новый плагин api_plugin.so и его аргументы в /home/sh2/plugins
-wget https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so?raw=true -O /home/sh2/plugins/api_plugin.so
+wget https://github.com/MimiSmart/mimi-server/blob/main/plugin/api_plugin.so?raw=true -O /home/sh2/plugins/api_plugin.so > /dev/null 2>&1
 
 # Check if file was downloaded successfully
 if [ -f "/home/sh2/plugins/api_plugin.so" ]; then
@@ -88,8 +88,8 @@ fi
 
 
 # Загрузить сервер mediamtx
-wget https://github.com/MimiSmart/mimi-server/blob/main/midiamtx/mediamtx?raw=true -O /usr/local/bin/mediamtx
-wget https://github.com/MimiSmart/mimi-server/blob/main/midiamtx/mediamtx.yml?raw=true -O /usr/local/etc/mediamtx.yml
+wget https://github.com/MimiSmart/mimi-server/blob/main/midiamtx/mediamtx?raw=true -O /usr/local/bin/mediamtx > /dev/null 2>&1
+wget https://github.com/MimiSmart/mimi-server/blob/main/midiamtx/mediamtx.yml?raw=true -O /usr/local/etc/mediamtx.yml > /dev/null 2>&1
 
 # Проверить успешно ли загружены файлы
 if [ -f "/usr/local/bin/mediamtx" ] && [ -f "/usr/local/etc/mediamtx.yml" ]; then
@@ -113,9 +113,9 @@ WantedBy=multi-user.target
 EOF
 
 # Перезапускаем системный демон и запускаем слуюбу
-systemctl daemon-reload
-systemctl enable mediamtx.service
-systemctl start mediamtx.service
+systemctl daemon-reload > /dev/null 2>&1
+systemctl enable mediamtx.service > /dev/null 2>&1
+systemctl start mediamtx.service > /dev/null 2>&1
 
 # Проверяем, что служба запущена
 if systemctl is-active --quiet mediamtx.service; then
@@ -126,8 +126,8 @@ else
 fi
 
 # Копируем директорию vendor для api
-wget https://github.com/MimiSmart/mimi-server/archive/vendor.zip?raw=true -O /home/api/vendor.zip
-unzip /home/api/vendor.zip -d /home/api/
+wget https://github.com/MimiSmart/mimi-server/archive/vendor.zip?raw=true -O /home/api/vendor.zip > /dev/null 2>&1
+unzip /home/api/vendor.zip -d /home/api/ > /dev/null 2>&1
 
 # Проверяем успешно ли распакован архив
 if [ -d "/home/api/vendor" ]; then
