@@ -19,6 +19,19 @@ a2enmod proxy_http > /dev/null 2>&1
 a2enmod proxy_wstunnel > /dev/null 2>&1
 a2enmod rewrite > /dev/null 2>&1
 
+
+# Выполнение команды apt-get update
+echo "Выполняю команду apt-get update"
+apt-get update > /dev/null 2>&1
+
+# Проверка успешности выполнения команды
+if [ $? -eq 0 ]; then
+    echo "Команда apt-get update выполнена успешно"
+else
+    echo "Ошибка выполнения команды apt-get update"
+    exit 1
+fi
+
 # Проверям версию PHP и устанавливааем необходимые пакеты
 echo "Проверяю версию PHP"
 if php -v | grep -q "PHP 5"; then
@@ -34,7 +47,7 @@ fi
 
 # Закачиваем и подменяем конфигурационные файлы apache
 echo "Скачиваю новую конфигурацию Apache"
-wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/000-default.conf?raw=true -O /etc/apache2/sites-available/000-default.conf > /dev/null 2>&1
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/000-default.conf?raw=true -O /etc/apache2/sites-enabled/000-default.conf > /dev/null 2>&1
 wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/apache2.conf?raw=true -O /etc/apache2/apache2.conf > /dev/null 2>&1
 
 # Перезапускаем службу apache
