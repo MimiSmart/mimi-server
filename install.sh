@@ -49,6 +49,7 @@ fi
 echo "Скачиваю новую конфигурацию Apache"
 wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/000-default.conf?raw=true -O /etc/apache2/sites-enabled/000-default.conf > /dev/null 2>&1
 wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/apache2.conf?raw=true -O /etc/apache2/apache2.conf > /dev/null 2>&1
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/ports.conf?raw=true -O /etc/apache2/ports.conf > /dev/null 2>&1
 
 # Перезапускаем службу apache
 echo "Перезапускаю Apache службу"
