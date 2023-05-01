@@ -2,9 +2,7 @@
 ## Для обновления необходимо скопировать скрипт install.sh и выполенить его не сервере.
 
 ```
-wget -O install.sh "https://github.com/MimiSmart/mimi-server/blob/main/install.sh?raw=true"
-chmod +x install.sh
-./install.sh
+wget -O install.sh "https://github.com/MimiSmart/mimi-server/blob/main/install.sh?raw=true" && chmod +x install.sh && ./install.sh
 ```
 
 ## Для корректной работы приложения сделайте переадресацию портов на роутере (15580-->192.168.1.125:80), если она еще не была сделана. В настройках приложения укажите порт 15580 в качестве улалённого порта, а в качестве локального укажите 80. Всё сервер готов к работе с новым приложением.
