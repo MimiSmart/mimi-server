@@ -121,40 +121,34 @@ function get_state($fields)
 // Выгрузка изображения на сервер ######################
 function save_image()
 {
-    $fields = json_decode(file_get_contents('php://input'), true);
-
-    if (!isset($fields['img_name']) || !isset($fields['image'])) {
-        header('HTTP/1.1 400 Bad Request');
-        die('Missing required fields');
-    }
-
-    if ($_SERVER['CONTENT_TYPE'] != 'application/json') {
-        header('HTTP/1.1 400 Bad Request');
-        die('This endpoint only accepts JSON requests');
-    }
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            try {
+                $filename = time() . '_' . $_FILES['image']['name'];
+                $path = '/storage/images/' . $filename;
 
-        try {
-            $filename = time() . '_' . $fields['img_name'];
-            $path = '/storage/images/' . $filename;
-            file_put_contents($path, $fields['image']);
+                $db = new SQLite3(DB_FILENAME);
+                $img_table = "CREATE TABLE IF NOT EXISTS images (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    name VARCHAR NOT NULL,
+                    path VARCHAR NOT NULL
+                )";
+                $db->exec($img_table);
+                $db->exec("INSERT INTO images (name, path) VALUES ('$filename', '$path')");
+                // $last_id = $db->lastInsertRowID();
+                $db->close();
 
-            $db = new SQLite3(DB_FILENAME);
-            $img_table = "CREATE TABLE IF NOT EXISTS images (
-                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                name VARCHAR NOT NULL,
-                path VARCHAR NOT NULL
-            )";
-            $db->exec($img_table);
-            $db->exec("INSERT INTO images (name, path) VALUES ('$filename', '$path')");
-            $last_id = $db->lastInsertRowID();
-            $db->close();
+                move_uploaded_file($_FILES['image']['tmp_name'], $path);
+                echo json_encode(array('success' => true, 'name' => $filename));
 
-            echo json_encode(array('success' => true, 'id' => $last_id));
-        } catch (Exception $e) {
+            } catch (Exception $e) {
+                header('HTTP/1.1 400 Bad Request');
+                echo 'Error: ',  $e->getMessage(), "\n";
+            }
+        } else {
             header('HTTP/1.1 400 Bad Request');
-            echo 'Error: ',  $e->getMessage(), "\n";
+            echo 'Error uploading file.';
         }
     }
 }
