@@ -24,6 +24,11 @@ $globalSettings["logFile"] = LOG_FILE;
 
 require_once BASE_DIR . "AES128.php";
 require_once BASE_DIR . "SHClient.php";
+require BASE_DIR . "/vendor/autoload.php";
+
+use jalder\Upnp\Mediaserver;
+use jalder\Upnp\Renderer;
+
 
 $fields = array(
     "request" => null,
@@ -78,6 +83,10 @@ if ($_REQUEST['request'] === null) {
     get_image();
 } elseif ($_REQUEST['request'] === 'save-image') {
     save_image();
+} elseif ($_REQUEST['request'] === 'get-media-servers') {
+    get_media_servers();
+} elseif ($_REQUEST['request'] === 'get-media') {
+    get_media();
 } else {
     print_r('Request not supported');
 }
@@ -110,10 +119,48 @@ function get_state($fields)
     if ($shClient->run2()) {
 
         $state = $shClient->getDeviceStateByAddr($fields["addr"]);
-        print_r($state);
+        print_r(json_encode($state));
         exit;
     } else {
         print_r($shClient->errors);
+    }
+}
+
+
+function get_media_servers()
+{
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $mediaserver = new Mediaserver();
+
+        $servers = $mediaserver->discover();
+
+        if (!count($servers)) {
+            print_r('no upnp mediaservers found' . PHP_EOL);
+        } else {
+            print_r(json_encode($servers));
+        }
+    } else {
+        header('HTTP/1.1 400 Bad Request');
+        die('Unsupported request method');
+    }
+}
+
+
+function get_media()
+{
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $renderer = new Renderer();
+        $renderers = $renderer->discover();
+
+
+        if (!count($renderers)) {
+            print_r('no upnp renderers found' . PHP_EOL);
+        } else {
+            print_r(json_encode($renderers));
+        }
+    } else {
+        header('HTTP/1.1 400 Bad Request');
+        die('Unsupported request method');
     }
 }
 
@@ -141,7 +188,6 @@ function save_image()
 
                 move_uploaded_file($_FILES['image']['tmp_name'], $path);
                 echo json_encode(array('success' => true, 'name' => $filename));
-
             } catch (Exception $e) {
                 header('HTTP/1.1 400 Bad Request');
                 echo 'Error: ',  $e->getMessage(), "\n";
