@@ -70,7 +70,7 @@ chmod 777 /storage/images > /dev/null 2>&1
 
 # Проверяем успешно ли создана папка
 if [ -d "/storage/images" ]; then
-  echo "Директория Imagages успешно создана."
+  echo "Директория Images успешно создана."
 else
   echo "Не удалось создать директория images. Выход."
   exit 1
@@ -101,7 +101,7 @@ else
 fi
 
 # Restart mimismart service in screen
-echo "Пытаясь перезапустить сервер Mimiserver"
+echo "Пытаюсь перезапустить сервер Mimiserver"
 screen -S mimiserver -X stuff "qu$(printf \\r)"
 
 if [ $? -eq 0 ]; then
