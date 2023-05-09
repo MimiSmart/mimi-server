@@ -129,11 +129,11 @@ chmod +x /usr/local/bin/mediamtx
 
 # Создаём службу mideamtx
 echo "Создаю службу mediamtx"
-cat <<EOF >/etc/systemd/system/rtsp-simple-server.service
+cat <<EOF >/etc/systemd/system/mediamtx.service
 [Unit]
 Wants=network.target
 [Service]
-ExecStart=/usr/local/bin/rtsp-simple-server /usr/local/etc/rtsp-simple-server.yml
+ExecStart=/usr/local/bin/mediamtx /usr/local/etc/mediamtx.yml
 [Install]
 WantedBy=multi-user.target
 EOF
