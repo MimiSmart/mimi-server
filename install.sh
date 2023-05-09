@@ -159,6 +159,7 @@ unzip /home/api/vendor.zip -d /home/api/ > /dev/null 2>&1
 # Проверяем успешно ли распакован архив
 if [ -d "/home/api/vendor" ]; then
   echo "Архив зависимостей успешно распакован"
+  rm /home/api/vendor.zip
 else
   echo "Ошибка при распаковке архива зависимостей. Выход."
   exit 1
