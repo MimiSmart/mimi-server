@@ -154,7 +154,7 @@ fi
 # Копируем директорию vendor для api
 echo "Качаем зависимости для API"
 wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/api/vendor.zip?raw=true -O /home/api/vendor.zip > /dev/null 2>&1
-unzip /home/api/vendor.zip -d -o /home/api/ > /dev/null 2>&1
+unzip /home/api/vendor.zip -d /home/api/ > /dev/null 2>&1
 
 # Проверяем успешно ли распакован архив
 if [ -d "/home/api/vendor" ]; then
