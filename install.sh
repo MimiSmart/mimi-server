@@ -45,6 +45,20 @@ else
   exit 1
 fi
 
+# Перезаписываем файл def-args.txt. 
+echo "Меняю порт сервера для приложения на 55559"
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/def-args.txt?raw=true -O /home/sh2/def-args.txt > /dev/null 2>&1
+
+# Restart mimismart service in screen
+echo "Пытаюсь перезапустить сервер Mimiserver"
+screen -S mimiserver -X stuff "qu$(printf \\r)"
+
+if [ $? -eq 0 ]; then
+    echo "Перезапуск сервера успешно выполнен."
+else
+    echo "Перезапуск сервера не выполенен, выполните вручную."
+fi
+
 # Закачиваем и подменяем конфигурационные файлы apache
 echo "Скачиваю новую конфигурацию Apache"
 wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/apache/000-default.conf?raw=true -O /etc/apache2/sites-enabled/000-default.conf > /dev/null 2>&1
