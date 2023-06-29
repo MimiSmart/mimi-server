@@ -3,7 +3,7 @@
 date_default_timezone_set('Europe/Moscow');
 header("Content-Type: application/json; text/xml");
 define("BASE_DIR", __DIR__ . "/");
-define("XML_FILE", "/home/sh2/logic.xml"); //set chmod 666
+define("XML_FILE", "/home/sh2/logic.xml");
 define("LOG_FILE", "/home/sh2/logs/logs.txt");
 define("DB_FILENAME", "/home/settings/db/mimismart.db");
 define("KEYS", "/home/sh2/keys.txt");
@@ -11,13 +11,12 @@ define("KEYS", "/home/sh2/keys.txt");
 //begin smart house server settings ##################################
 define("HOST", "127.0.0.1");
 define("PORT", 55555);
-define("SECRET_KEY", "1234567890123456");
 
 $globalSettings = array();
 $globalSettings["shs"] = array();
 $globalSettings["shs"]["host"] = HOST;
 $globalSettings["shs"]["port"] = PORT;
-$globalSettings["shs"]["secret_key"] = SECRET_KEY;
+$globalSettings["shs"]["secret_key"] = $_REQUEST['key'];
 $globalSettings["shs"]["logFile"] = LOG_FILE;
 $globalSettings["debug"] = FALSE;
 $globalSettings["logFile"] = LOG_FILE;
@@ -45,20 +44,14 @@ $fields = array(
     "image" => null,
 );
 
+
 // Авторизация по токену ############################
 // $authHeader = apache_request_headers();
 // $authkey = $authHeader['Authorization'];
 // $token = str_replace('Bearer ', '', $authkey);
-// $lines = file(KEYS);
 
-// foreach ($lines as $line) {
-//     $words = explode(" ", $line);
-//     // echo $words[0] . ' '; 
-//     $first_word = $words[0];
-//     if ($first_word == $token) {
-//         $auth_success = true;
-//         break;
-//     }
+// if (SECRET_KEY == $token) {
+//     $auth_success = true;
 // }
 // if (!$auth_success) {
 //     http_response_code(401);
@@ -74,11 +67,11 @@ if ($_REQUEST['request'] === null) {
 } elseif ($_REQUEST['request'] === 'get-xml') {
     get_xml();
 } elseif ($_REQUEST['request'] === 'send-message') {
-    send_message($fields);
+    send_message();
 } elseif ($_REQUEST['request'] === 'send-command') {
-    send_command_to_sh($fields);
+    send_command_to_sh();
 } elseif ($_REQUEST['request'] === 'get-state') {
-    get_state($fields);
+    get_state();
 } elseif ($_REQUEST['request'] === 'get-image') {
     get_image();
 } elseif ($_REQUEST['request'] === 'save-image') {
@@ -92,37 +85,71 @@ if ($_REQUEST['request'] === null) {
 }
 
 
+function check_key($reqKey)
+{
+    $lines = file(KEYS);
+    foreach ($lines as $line) {
+        $keys = explode(" ", $line);
+        $key = $keys[0];
+        if ($reqKey == $key) {
+            $auth_success = true;
+            break;
+        } else {
+            $auth_success = false;
+        }
+    }
+    return $auth_success;
+}
+
 // Получение логики XML ######################
 function get_xml()
 {
-    $shClient = new SHClient(HOST, PORT, SECRET_KEY, LOG_FILE);
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if (check_key($_REQUEST['key']) == true) {
 
-    if ($shClient->run2()) {
-        $xml = $shClient->getXml(TRUE);
-        print_r($xml);
-        exit;
+            $shClient = new SHClient(HOST, PORT, $_REQUEST['key'], LOG_FILE);
+
+            if ($shClient->run2()) {
+                $xml = $shClient->getXml(TRUE);
+                print_r($xml);
+                exit;
+            } else {
+                print_r($shClient->errors);
+            }
+        } else {
+            http_response_code(401);
+            die(json_encode(['request' => $_REQUEST['request'], 'error' => 'Unauthorized']));
+        }
     } else {
-        print_r($shClient->errors);
+        http_response_code(401);
+        die(json_encode(['error' => 'Unsupported request method']));
     }
 }
 
 
 // Получение статуса устройств ######################
-function get_state($fields)
+function get_state()
 {
-    foreach ($fields as $field => $value) {
-        if (array_key_exists($field, $_REQUEST)) $fields[$field] = $_REQUEST[$field];
-    }
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if (check_key($_REQUEST['key']) == true) {
 
-    $shClient = new SHClient(HOST, PORT, SECRET_KEY, LOG_FILE);
+            $shClient = new SHClient(HOST, PORT, $_REQUEST['key'], LOG_FILE);
 
-    if ($shClient->run2()) {
+            if ($shClient->run2()) {
 
-        $state = $shClient->getDeviceStateByAddr($fields["addr"]);
-        print_r(json_encode($state));
-        exit;
+                $state = $shClient->getDeviceStateByAddr($_REQUEST['addr']);
+                print_r(json_encode($state));
+                exit;
+            } else {
+                print_r($shClient->errors);
+            }
+        } else {
+            http_response_code(401);
+            die(json_encode(['request' => $_REQUEST['request'], 'error' => 'Unauthorized']));
+        }
     } else {
-        print_r($shClient->errors);
+        http_response_code(401);
+        die(json_encode(['error' => 'Unsupported request method']));
     }
 }
 
@@ -140,8 +167,8 @@ function get_media_servers()
             print_r(json_encode($servers));
         }
     } else {
-        header('HTTP/1.1 400 Bad Request');
-        die('Unsupported request method');
+        http_response_code(401);
+        die(json_encode(['error' => 'Unsupported request method']));
     }
 }
 
@@ -159,8 +186,8 @@ function get_media()
             print_r(json_encode($renderers));
         }
     } else {
-        header('HTTP/1.1 400 Bad Request');
-        die('Unsupported request method');
+        http_response_code(401);
+        die(json_encode(['error' => 'Unsupported request method']));
     }
 }
 
@@ -196,6 +223,9 @@ function save_image()
             header('HTTP/1.1 400 Bad Request');
             echo 'Error uploading file.';
         }
+    } else {
+        http_response_code(401);
+        die(json_encode(['error' => 'Unsupported request method']));
     }
 }
 
@@ -237,52 +267,65 @@ function get_image()
             echo 'Error: ',  $e->getMessage(), "\n";
         }
     } else {
-        header('HTTP/1.1 400 Bad Request');
-        die('Unsupported request method');
+        http_response_code(401);
+        die(json_encode(['error' => 'Unsupported request method']));
     }
 }
 
 
 // Отправка команды серверу ######################
-function send_command_to_sh($fields)
+function send_command_to_sh()
 {
-    foreach ($fields as $field => $value) {
-        if (array_key_exists($field, $_REQUEST)) $fields[$field] = $_REQUEST[$field];
-    }
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if (check_key($_REQUEST['key']) == true) {
 
-    $shClient = new SHClient(HOST, PORT, SECRET_KEY, LOG_FILE);
+            $shClient = new SHClient(HOST, PORT, $_REQUEST['key'], LOG_FILE);
 
-    if ($shClient->run2()) {
+            if ($shClient->run2()) {
 
-        $shClient->sendCommand($fields['command'], TRUE);
-        print_r('Command sent.');
-        exit;
+                $shClient->sendCommand($fields['command'], TRUE);
+                print_r('Command sent.');
+                exit;
+            } else {
+                print_r($shClient->errors);
+            }
+        } else {
+            http_response_code(401);
+            die(json_encode(['request' => $_REQUEST['request'], 'error' => 'Unauthorized']));
+        }
     } else {
-        print_r($shClient->errors);
+        http_response_code(401);
+        die(json_encode(['error' => 'Unsupported request method']));
     }
 }
 
 
 // Отправка сообщения ######################
-function send_message($fields)
+function send_message()
 {
 
-    foreach ($fields as $field => $value) {
-        if (array_key_exists($field, $_REQUEST)) $fields[$field] = $_REQUEST[$field];
-    }
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if (check_key($_REQUEST['key']) == true) {
 
-    list($id, $subid) = explode(":", $fields["addr"]);
-    print_r($fields['message'] . ' ' . $fields['message_type'] . ' ' . $id . ' ' . $subid . PHP_EOL);
+            list($id, $subid) = explode(":", $_REQUEST['addr']);
 
-    $shClient = new SHClient(HOST, PORT, SECRET_KEY, LOG_FILE);
+            $shClient = new SHClient(HOST, PORT, $_REQUEST['key'], LOG_FILE);
 
-    if ($shClient->run2()) {
+            if ($shClient->run2()) {
 
-        $shClient->sendMessage($fields['message'], $fields['message_type'], $id, $subid);
-        print_r('Message sent.');
-        exit;
+                $shClient->sendMessage($_REQUEST['message'], $_REQUEST['message_type'], $id, $subid);
+                print_r('Message sent.');
+                exit;
+            } else {
+                print_r($shClient->errors);
+            }
+        } else {
+            http_response_code(401);
+            die(json_encode(['request' => $_REQUEST['request'], 'error' => 'Unauthorized']));
+        }
     } else {
-        print_r($shClient->errors);
+        http_response_code(401);
+        die(json_encode(['error' => 'Unsupported request method']));
     }
 }
 
@@ -294,102 +337,112 @@ function get_history($fields)
         if (array_key_exists($field, $_REQUEST)) $fields[$field] = $_REQUEST[$field];
     }
 
-    $showSeveralDays = false;
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if (check_key($_REQUEST['key']) == true) {
+            $showSeveralDays = false;
 
-    $shClient = new SHClient(HOST, PORT, SECRET_KEY, LOG_FILE);
+            $shClient = new SHClient(HOST, PORT, SECRET_KEY, LOG_FILE);
 
-    if ($shClient->run2()) {
-        //begin get logic xml
-        $methodName = "stopListenEvents";
-        $callback = array($shClient, $methodName);
+            if ($shClient->run2()) {
+                //begin get logic xml
+                $methodName = "stopListenEvents";
+                $callback = array($shClient, $methodName);
 
-        $shClient->sendCommandToSH('get-shc', $callback);
-        $shClient->listenEventsOnMsg();
-        //end get logic xml
+                $shClient->sendCommandToSH('get-shc', $callback);
+                $shClient->listenEventsOnMsg();
+                //end get logic xml
 
-        $params = array();
-        $re = "/\d{4}\-\d{2}\-\d{2}\ \d{2}\:\d{2}\:\d{2}/";
+                $params = array();
+                $re = "/\d{4}\-\d{2}\-\d{2}\ \d{2}\:\d{2}\:\d{2}/";
 
-        if (!is_null($fields["scale"]) && $fields["scale"] > 1) $params["scale"] = $fields["scale"];
+                if (!is_null($fields["scale"]) && $fields["scale"] > 1) $params["scale"] = $fields["scale"];
 
-        if (
-            !is_null($fields["from"]) && !is_null($fields["to"]) &&
-            preg_match($re, $fields["from"]) && preg_match($re, $fields["to"]) &&
-            strtotime($fields["to"]) > strtotime($fields["from"])
-        ) {
+                if (
+                    !is_null($fields["from"]) && !is_null($fields["to"]) &&
+                    preg_match($re, $fields["from"]) && preg_match($re, $fields["to"]) &&
+                    strtotime($fields["to"]) > strtotime($fields["from"])
+                ) {
 
-            $params["fromDate"] = gmdate("U", (int)strtotime($fields["from"]));
-            $params["toDate"] = gmdate("U", (int)strtotime($fields["to"]));
-            $params["toDateUTS"] = (int)strtotime($fields["to"]);
-            if (strtotime($fields["to"]) > (strtotime($fields["from"]) + (3600 * 24))) $showSeveralDays = false;
-        } else {
-            $params["fromDate"] = gmdate("U", time() - 3600);
-            $params["toDate"] = gmdate("U");
-            $params["toDateUTS"] = time();
-        }
-
-        if (!is_null($fields["addr"]) && is_string($fields["addr"]) && strpos($fields["addr"], ":") !== FALSE) $fields["addr"] = array($fields["addr"]);
-
-        if (is_array($fields["addr"]) && count($fields["addr"])) {
-            $addrNumber = count($fields["addr"]);
-            $chartDataTmp = array();
-            foreach ($fields["addr"] as $addr) {
-                $dataTmp = array();
-                if (strpos($addr, ":") !== FALSE) {
-                    list($id, $subid) = explode(":", $addr);
-                    $itemType = $shClient->getItemType($id, $subid);
-
-                    if ($itemType != "") {
-                        $params["id"] = $id;
-                        $params["subid"] = $subid;
-                        $params["devtype"] = $itemType;
-
-                        //get history of device
-                        if ($showSeveralDays) {
-                            $fromTmp = (int)strtotime($fields["from"]);
-                            $toTmp = (int)strtotime($fields["to"]);
-                            while ($fromTmp < $toTmp) {
-                                $params["fromDate"] = gmdate("U", $fromTmp);
-                                $params["toDate"] = gmdate("U", ($toTmp));
-                                $params["toDateUTS"] = $toTmp;
-                                $dataPart = $shClient->getDeviceHistory($params);
-                                $dataResult = array_merge($dataTmp, $dataPart);
-                                $dataTmp = $dataResult;
-                                $fromTmp = $fromTmp + (3600 * 24);
-                            }
-                        } else $dataTmp = $shClient->getDeviceHistory($params);
-                    }
+                    $params["fromDate"] = gmdate("U", (int)strtotime($fields["from"]));
+                    $params["toDate"] = gmdate("U", (int)strtotime($fields["to"]));
+                    $params["toDateUTS"] = (int)strtotime($fields["to"]);
+                    if (strtotime($fields["to"]) > (strtotime($fields["from"]) + (3600 * 24))) $showSeveralDays = false;
+                } else {
+                    $params["fromDate"] = gmdate("U", time() - 3600);
+                    $params["toDate"] = gmdate("U");
+                    $params["toDateUTS"] = time();
                 }
-                $chartDataTmp[] = $dataTmp;
-            }
-            if ($addrNumber > 1) {
-                $timesUniq = array();
-                foreach ($chartDataTmp as $key1 => $deviceData) {
-                    foreach ($deviceData as $key2 => $data) {
-                        $time = $data[0];
-                        $value = $data[1];
 
-                        if (!array_key_exists($time, $timesUniq)) {
-                            $timesUniq[$time] = array();
-                            if ($key1 > 0) {
-                                for ($i = 0; $i < $key1; $i++) {
-                                    $timesUniq[$time][] = null;
-                                }
+                if (!is_null($fields["addr"]) && is_string($fields["addr"]) && strpos($fields["addr"], ":") !== FALSE) $fields["addr"] = array($fields["addr"]);
+
+                if (is_array($fields["addr"]) && count($fields["addr"])) {
+                    $addrNumber = count($fields["addr"]);
+                    $chartDataTmp = array();
+                    foreach ($fields["addr"] as $addr) {
+                        $dataTmp = array();
+                        if (strpos($addr, ":") !== FALSE) {
+                            list($id, $subid) = explode(":", $addr);
+                            $itemType = $shClient->getItemType($id, $subid);
+
+                            if ($itemType != "") {
+                                $params["id"] = $id;
+                                $params["subid"] = $subid;
+                                $params["devtype"] = $itemType;
+
+                                //get history of device
+                                if ($showSeveralDays) {
+                                    $fromTmp = (int)strtotime($fields["from"]);
+                                    $toTmp = (int)strtotime($fields["to"]);
+                                    while ($fromTmp < $toTmp) {
+                                        $params["fromDate"] = gmdate("U", $fromTmp);
+                                        $params["toDate"] = gmdate("U", ($toTmp));
+                                        $params["toDateUTS"] = $toTmp;
+                                        $dataPart = $shClient->getDeviceHistory($params);
+                                        $dataResult = array_merge($dataTmp, $dataPart);
+                                        $dataTmp = $dataResult;
+                                        $fromTmp = $fromTmp + (3600 * 24);
+                                    }
+                                } else $dataTmp = $shClient->getDeviceHistory($params);
                             }
                         }
-                        $timesUniq[$time][] = $value;
+                        $chartDataTmp[] = $dataTmp;
                     }
+                    if ($addrNumber > 1) {
+                        $timesUniq = array();
+                        foreach ($chartDataTmp as $key1 => $deviceData) {
+                            foreach ($deviceData as $key2 => $data) {
+                                $time = $data[0];
+                                $value = $data[1];
+
+                                if (!array_key_exists($time, $timesUniq)) {
+                                    $timesUniq[$time] = array();
+                                    if ($key1 > 0) {
+                                        for ($i = 0; $i < $key1; $i++) {
+                                            $timesUniq[$time][] = null;
+                                        }
+                                    }
+                                }
+                                $timesUniq[$time][] = $value;
+                            }
+                        }
+                        $chartDataTmp = array();
+                        foreach ($timesUniq as $time => $values) {
+                            $padedValues = array_pad($values, $addrNumber, null);
+                            $chartDataTmp[] = array_merge(array($time), $padedValues);
+                        }
+                        $chartData = $chartDataTmp;
+                    } elseif (array_key_exists(0, $chartDataTmp)) $chartData = $chartDataTmp[0];
                 }
-                $chartDataTmp = array();
-                foreach ($timesUniq as $time => $values) {
-                    $padedValues = array_pad($values, $addrNumber, null);
-                    $chartDataTmp[] = array_merge(array($time), $padedValues);
-                }
-                $chartData = $chartDataTmp;
-            } elseif (array_key_exists(0, $chartDataTmp)) $chartData = $chartDataTmp[0];
+            } else {
+                print_r($shClient->errors);
+            }
+        } else {
+            http_response_code(401);
+            die(json_encode(['request' => $_REQUEST['request'], 'error' => 'Unauthorized']));
         }
     } else {
-        print_r($shClient->errors);
+        http_response_code(401);
+        die(json_encode(['error' => 'Unsupported request method']));
     }
 
     print str_replace('"', "", json_encode($chartData));
