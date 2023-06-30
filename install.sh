@@ -51,6 +51,10 @@ fi
 echo "Меняю порт сервера для приложения на 55559"
 wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/def-args.txt?raw=true -O /home/sh2/def-args.txt > /dev/null 2>&1
 
+# Обноляем файл настроек MimiSetup. 
+echo "Обновляю файл настроект MimiSetup"
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/blob/main/server/settings.php?raw=true -O /home/html/MimiSetup/settings.txt > /dev/null 2>&1
+
 # Restart mimismart service in screen
 echo "Пытаюсь перезапустить сервер Mimiserver"
 screen -S mimiserver -X stuff "qu$(printf \\r)"
