@@ -53,7 +53,7 @@ wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/def-args.txt?r
 
 # Обноляем файл настроек MimiSetup. 
 echo "Обновляю файл настроект MimiSetup"
-wget https://raw.githubusercontent.com/MimiSmart/mimi-server/blob/main/server/settings.php?raw=true -O /home/html/MimiSetup/settings.txt > /dev/null 2>&1
+wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/server/settings.php?raw=true -O /home/html/MimiSetup/settings.php > /dev/null 2>&1
 
 # Restart mimismart service in screen
 echo "Пытаюсь перезапустить сервер Mimiserver"
@@ -174,6 +174,7 @@ fi
 # Копируем директорию vendor для api
 echo "Качаем зависимости для API"
 wget https://raw.githubusercontent.com/MimiSmart/mimi-server/main/api/vendor.zip?raw=true -O /home/api/vendor.zip > /dev/null 2>&1
+rm -rf /home/api/vendor/
 unzip /home/api/vendor.zip -d /home/api/ > /dev/null 2>&1
 
 # Проверяем успешно ли распакован архив
