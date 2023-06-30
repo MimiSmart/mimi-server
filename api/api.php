@@ -23,10 +23,10 @@ $globalSettings["logFile"] = LOG_FILE;
 
 require_once BASE_DIR . "AES128.php";
 require_once BASE_DIR . "SHClient.php";
-require BASE_DIR . "/vendor/autoload.php";
+// require BASE_DIR . "/vendor/autoload.php";
 
-use jalder\Upnp\Mediaserver;
-use jalder\Upnp\Renderer;
+// use jalder\Upnp\Mediaserver;
+// use jalder\Upnp\Renderer;
 
 
 $fields = array(
