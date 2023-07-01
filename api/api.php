@@ -10,7 +10,7 @@ define("KEYS", "/home/sh2/keys.txt");
 
 //begin smart house server settings ##################################
 define("HOST", "127.0.0.1");
-define("PORT", 55555);
+define("PORT", 55559);
 
 $globalSettings = array();
 $globalSettings["shs"] = array();
