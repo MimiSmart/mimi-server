@@ -22,17 +22,17 @@ a2enmod proxy_wstunnel > /dev/null 2>&1
 a2enmod rewrite > /dev/null 2>&1
 
 
-# # Выполнение команды apt-get update
-# echo "Выполняю команду apt-get update"
-# apt-get update > /dev/null 2>&1
+# Выполнение команды apt-get update
+echo "Выполняю команду apt-get update"
+apt-get update > /dev/null 2>&1
 
-# # Проверка успешности выполнения команды
-# if [ $? -eq 0 ]; then
-#     echo "Команда apt-get update выполнена успешно"
-# else
-#     echo "Ошибка выполнения команды apt-get update"
-#     exit 1
-# fi
+# Проверка успешности выполнения команды
+if [ $? -eq 0 ]; then
+    echo "Команда apt-get update выполнена успешно"
+else
+    echo "Ошибка выполнения команды apt-get update"
+    exit 1
+fi
 
 # Проверям версию PHP и устанавливааем необходимые пакеты
 echo "Проверяю версию PHP"
