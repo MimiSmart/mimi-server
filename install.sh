@@ -12,21 +12,6 @@ else
     exit 1
 fi
 
-# Очищаем таблицу IPTABLES
-read -p "Вы хотите очистить таблицу IPTABLES? (y/n): " choice
-if [[ $choice == "y" || $choice == "Y" ]]; then
-    iptables -P INPUT ACCEPT
-    iptables -P FORWARD ACCEPT
-    iptables -P OUTPUT ACCEPT
-    iptables -t nat -F
-    iptables -t mangle -F
-    iptables -F
-    iptables -X
-else
-    echo "Хорошо. Не буду."
-fi
-
-
 
 # Активируем необходимые модули
 echo "Активирую необходимые модули Apache"
