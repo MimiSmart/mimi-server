@@ -341,7 +341,7 @@ function get_history($fields)
         if (check_key($_REQUEST['key']) == true) {
             $showSeveralDays = false;
 
-            $shClient = new SHClient(HOST, PORT, SECRET_KEY, LOG_FILE);
+            $shClient = new SHClient(HOST, PORT, $_REQUEST['key'], LOG_FILE);
 
             if ($shClient->run2()) {
                 //begin get logic xml
